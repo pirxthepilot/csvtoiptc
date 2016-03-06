@@ -1,15 +1,35 @@
 #!/usr/bin/env python
 # Whaddya say we do this in python ey?
 # HELLZ YEAH
+#
+# Syntax: convert.py <csv file path>
 
-import csv
+import csv, sys
 from subprocess import call
+
+# Init
+#
 
 basedir = '/home/joon/Documents'
 
-with open('sample.csv', 'rb') as csvfile:
-    spamreader = csv.DictReader(csvfile)
-    for row in spamreader:
-      print row['one'] + ' ' + row['three'] + ': '+ row['two']
+if len(sys.argv) != 2:
+    print "Syntax: convert.py <csv file path>"
+    sys.exit()
 
-call(["ls", "-l", basedir + '/2015'])
+inputcsv = str(sys.argv[1])
+skip_cols = ['Year', 'Folder location', 'Original filename', 'New filename']
+
+
+# Main prog
+#
+with open(inputcsv, 'rb') as csvfile:
+    csvdict = csv.DictReader(csvfile)
+    for row in csvdict:
+        exiftool_args = "" 
+        for col,value in row.iteritems():
+            if col in skip_cols:
+                continue
+            exiftool_args += col + ': "' + value + '" '
+        print '========================='
+        #print exiftool_args
+        call(["echo", exiftool_args])
