@@ -4,14 +4,17 @@
 #
 # Syntax: convert.py <csv file path>
 
-import csv, sys, re
-from subprocess import call
+import csv, sys, re, logging, subprocess
+#from subprocess import call
 
 # Init
 #
 
 basedir = '/home/joon/Documents'
 exiftool = '/usr/bin/exiftool'
+
+logging.basicConfig(filename='csvtoiptc.log',level=logging.DEBUG)
+
 
 if len(sys.argv) != 2:
     print "Syntax: convert.py <csv file path>"
@@ -25,6 +28,12 @@ spacefix= re.compile(r"\s+")
 
 # Main prog
 #
+
+logging.info('\n')
+logging.info('***** STARTING RUN *****')
+logging.info('\n')
+print '\n***** STARTING RUN *****\n'
+
 with open(inputcsv, 'rb') as csvfile:
     csvdict = csv.DictReader(csvfile)
 
@@ -58,7 +67,25 @@ with open(inputcsv, 'rb') as csvfile:
         exiftool_cmd.append(filename)
 
         # Run!
+        logging.info('===================\n')
+        logging.info('PROCESSING ' + filename)
         print '================'
-        print 'Processing ' + filename
+        print 'PROCESSING ' + filename
         #print exiftool_cmd
-        call(exiftool_cmd)
+        #call(exiftool_cmd)
+
+        p = subprocess.Popen(exiftool_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = p.communicate()
+
+        if stdout:
+            logging.info(stdout)
+            print stdout
+        if stderr:
+            logging.error(stderr)
+            print stderr
+
+# Done!
+logging.info('\n')
+logging.info('***** RUN COMPLETE *****')
+logging.info('\n')
+print '\n***** RUN COMPLETE *****\n'
