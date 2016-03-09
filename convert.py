@@ -20,7 +20,7 @@ if len(sys.argv) != 2:
 inputcsv = str(sys.argv[1])
 skip_cols = ['Year', 'Folder location', 'Original filename', 'New filename', 'CopyrightStatus']
 pathfix = re.compile(r"\./")
-spacefix= re.compile(r"\s")
+spacefix= re.compile(r"\s+")
 
 
 # Main prog
@@ -32,10 +32,10 @@ with open(inputcsv, 'rb') as csvfile:
         
         # File path fixes
         filename = basedir + pathfix.sub('/', row['Original filename'])
-        #filename = spacefix.sub('\ ', filename)
+        #filename = spacefix.sub(r"\ ", filename)
         
         # Call exiftool
-        exiftool_cmd = [ 'exiftool' ] 
+        exiftool_cmd = [ '/usr/bin/exiftool' ] 
 
         # Prep some tags
         if row['CopyrightStatus'].lower() == 'copyrighted':
@@ -43,7 +43,7 @@ with open(inputcsv, 'rb') as csvfile:
             row['Marked'] = 'True'
         else:
             #row['xmpRights:Marked'] = 'False'
-            row['Marked'] = 'True'
+            row['Marked'] = 'False'
 
         # Set tag args
         for tag,value in row.iteritems():
@@ -51,12 +51,14 @@ with open(inputcsv, 'rb') as csvfile:
                 continue
             if value == "":
                 continue
-            exiftool_cmd.append('-' + tag + '="' + value + '"')
+            #exiftool_cmd.append('-' + tag + '="' + value + '"')
+            exiftool_cmd.append('-' + tag + '=' + value)
         
         # Filename
-        exiftool_cmd.append('"' + filename + '"')
+        exiftool_cmd.append(filename)
 
         # Run!
-        print 'Processing ' + filename + '...'
-        call(exiftool_cmd)
+        print '================'
+        print 'Processing ' + filename
         #print exiftool_cmd
+        call(exiftool_cmd)
