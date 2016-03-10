@@ -14,6 +14,7 @@ basedir = '/home/joon/Documents'
 exiftool = '/usr/bin/exiftool'
 
 logging.basicConfig(filename='csvtoiptc.log',level=logging.DEBUG)
+logging.info('\n\n\n')
 
 
 if len(sys.argv) != 2:
@@ -29,9 +30,10 @@ spacefix= re.compile(r"\s+")
 # Main prog
 #
 
-logging.info('\n')
+logging.info('************************')
 logging.info('***** STARTING RUN *****')
-logging.info('\n')
+logging.info('************************')
+logging.info('')
 print '\n***** STARTING RUN *****\n'
 
 with open(inputcsv, 'rb') as csvfile:
@@ -85,7 +87,6 @@ with open(inputcsv, 'rb') as csvfile:
             print stderr
 
 # Done!
-logging.info('\n')
-logging.info('***** RUN COMPLETE *****')
-logging.info('\n')
-print '\n***** RUN COMPLETE *****\n'
+logging.info('')
+logging.info('+++++ RUN COMPLETE +++++')
+print '\n++++ RUN COMPLETE +++++\n'
