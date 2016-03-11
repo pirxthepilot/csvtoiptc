@@ -8,7 +8,8 @@ import csv, sys, re, logging, os.path
 # Init
 #
 
-basedir = '/home/joon/Documents'
+basedir = '/run/media/joon/GSV Sleeper Service/Byahero'
+#basedir = '/home/joon/Documents'
 exiftool = '/usr/bin/exiftool'
 
 logging.basicConfig(filename='file_check.log',level=logging.DEBUG)
@@ -36,7 +37,12 @@ print '\n***** STARTING RUN *****\n'
 with open(inputcsv, 'rb') as csvfile:
     csvdict = csv.DictReader(csvfile)
 
+    count = 0
+
     for row in csvdict:
+
+        count += 1
+        print '[%s]' % count
         
         filename = basedir + pathfix.sub('/', row['Original filename'])
         #filename = spacefix.sub(r"\ ", filename)
