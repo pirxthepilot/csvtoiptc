@@ -17,7 +17,7 @@ logging.info('\n\n\n')
 
 
 if len(sys.argv) != 2:
-    print "Syntax: convert.py <csv file path>"
+    print "Syntax: file_check.py <csv file path>"
     sys.exit()
 
 inputcsv = str(sys.argv[1])
@@ -37,12 +37,13 @@ print '\n***** STARTING RUN *****\n'
 with open(inputcsv, 'rb') as csvfile:
     csvdict = csv.DictReader(csvfile)
 
-    count = 0
+    #count = 0
+    #print str(len(list(csvdict)))
 
     for row in csvdict:
 
-        count += 1
-        print '[%s]' % count
+        #count += 1
+        #print '[%s]' % count
         
         filename = basedir + pathfix.sub('/', row['Original filename'])
         #filename = spacefix.sub(r"\ ", filename)

@@ -42,10 +42,6 @@ with open(inputcsv, 'rb') as csvfile:
     count = 0
 
     for row in csvdict:
-
-        # Print count
-        count += 1
-        print '[%s]' % count
         
         # File path fixes
         filename = basedir + pathfix.sub('/', row['Original filename'])
@@ -70,6 +66,7 @@ with open(inputcsv, 'rb') as csvfile:
                 continue
             #exiftool_cmd.append('-' + tag + '="' + value + '"')
             exiftool_cmd.append('-' + tag + '=' + value)
+            #print exiftool_cmd
         
         # Filename
         exiftool_cmd.append(filename)
@@ -78,9 +75,10 @@ with open(inputcsv, 'rb') as csvfile:
         logging.info('===================\n')
         logging.info('PROCESSING ' + filename)
         print '================'
+        count += 1
+        print '[%s]' % count
         print 'PROCESSING ' + filename
         #print exiftool_cmd
-        #call(exiftool_cmd)
 
         p = subprocess.Popen(exiftool_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
