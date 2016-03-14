@@ -48,7 +48,7 @@ with open(inputcsv, 'rb') as csvfile:
         #filename = spacefix.sub(r"\ ", filename)
         
         # Call exiftool
-        exiftool_cmd = [ '/usr/bin/exiftool' ] 
+        exiftool_cmd = [ '/usr/bin/exiftool', '-overwrite_original' ]
 
         # Prep some tags
         if row['CopyrightStatus'].lower() == 'copyrighted':
