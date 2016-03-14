@@ -2,7 +2,7 @@
 #
 # Syntax: file_check.py <csv file path>
 
-import csv, sys, re, logging, os.path, os.rename
+import csv, sys, re, logging, os
 
 # Init
 #
@@ -21,6 +21,7 @@ if len(sys.argv) != 2:
 inputcsv = str(sys.argv[1])
 pathfix = re.compile(r"\./")
 spacefix= re.compile(r"\s+")
+sdyear = re.compile(r"^\d{4}$")
 src_field = 'Original filename'
 dst_field = 'New filename'
 
@@ -39,7 +40,17 @@ with open(inputcsv, 'rb') as csvfile:
     for row in csvdict:
 
         source = basedir + pathfix.sub('/', row[src_field])
-        destination = basedir + pathfix.sub('/', row[dst_field])
+        subdir = source.split('/')
+        subappend = ''
+
+        for i in range(-2,-6,-1):
+            if subappend != '':
+                subappend = subdir[i] + '/' + subappend
+            else:
+                subappend = subdir[i]
+            if sdyear.match(subdir[i]):
+                destination = basedir + '/' + subappend + '/' + row[dst_field]
+                break
 
         print 'Original file: %s' % source
         print 'New file: %s' % destination
@@ -57,10 +68,10 @@ with open(inputcsv, 'rb') as csvfile:
             continue
 
         # Rename proper
-        #try:
-        #    os.rename(source, destination)
-        #except Exception as e:
-        #    logging.error('Error: %s') %e.message
+        try:
+            os.rename(source, destination)
+        except Exception as e:
+            logging.error('Error: %s') %e.message
 
 # Done!
 logging.info('')
