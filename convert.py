@@ -4,16 +4,22 @@
 #
 # Syntax: convert.py <csv file path>
 
-import csv, sys, re, logging, subprocess
-#from subprocess import call
+import csv
+import sys
+import re
+import logging
+import subprocess
+import os
+
 
 # Init
 #
 
 basedir = '/run/media/joon/GSV Sleeper Service/Byahero'
+# basedir = '/home/joon/Documents'
 exiftool = '/usr/bin/exiftool'
 
-logging.basicConfig(filename='csvtoiptc.log',level=logging.DEBUG)
+logging.basicConfig(filename='keywordtags.log', level=logging.DEBUG)
 logging.info('\n\n\n')
 
 
@@ -22,9 +28,9 @@ if len(sys.argv) != 2:
     sys.exit()
 
 inputcsv = str(sys.argv[1])
-skip_cols = ['Year', 'Folder location', 'Original filename', 'New filename', 'CopyrightStatus']
+skip_cols = ['Year', 'Folder location', 'Original filename',
+             'New filename', 'CopyrightStatus']
 pathfix = re.compile(r"\./")
-spacefix= re.compile(r"\s+")
 
 
 # Main prog
@@ -42,32 +48,39 @@ with open(inputcsv, 'rb') as csvfile:
     count = 0
 
     for row in csvdict:
-        
+
         # File path fixes
         filename = basedir + pathfix.sub('/', row['Original filename'])
-        #filename = spacefix.sub(r"\ ", filename)
-        
+        filename = os.path.dirname(os.path.abspath(filename)) + '/' + row['New filename']
+
+        # if not os.path.isfile(filename):
+        #    continue
+
         # Call exiftool
-        exiftool_cmd = [ '/usr/bin/exiftool', '-overwrite_original' ]
+        exiftool_cmd = ['/usr/bin/exiftool', '-overwrite_original', '-sep', '; ']
 
         # Prep some tags
-        if row['CopyrightStatus'].lower() == 'copyrighted':
-            #row['xmpRights:Marked'] = 'True'
-            row['Marked'] = 'True'
-        else:
-            #row['xmpRights:Marked'] = 'False'
-            row['Marked'] = 'False'
+        # if row['CopyrightStatus'].lower() == 'copyrighted':
+        #     row['Marked'] = 'True'
+        # else:
+        #     row['Marked'] = 'False'
 
         # Set tag args
-        for tag,value in row.iteritems():
+        for tag, value in row.iteritems():
             if tag in skip_cols:
                 continue
             if value == "":
                 continue
-            #exiftool_cmd.append('-' + tag + '="' + value + '"')
+            # If tag is a list, do something special
+            # if ";" in value:
+            #     taglist = value.split("; ")
+            #     for tagval in taglist:
+            #         exiftool_cmd.append('-' + tag + '=' + tagval)
+            # else:
             exiftool_cmd.append('-' + tag + '=' + value)
-            #print exiftool_cmd
-        
+
+            # print exiftool_cmd
+
         # Filename
         exiftool_cmd.append(filename)
 
@@ -78,9 +91,10 @@ with open(inputcsv, 'rb') as csvfile:
         count += 1
         print '[%s]' % count
         print 'PROCESSING ' + filename
-        #print exiftool_cmd
+        # print exiftool_cmd
 
-        p = subprocess.Popen(exiftool_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(exiftool_cmd, stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
 
         if stdout:
