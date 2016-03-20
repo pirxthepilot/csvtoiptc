@@ -10,5 +10,3 @@ while read -r file; do
     fi
 done <<< "$( find "$BASEDIR" -type f )"
 
-#shit=$( find "$BASEDIR" -type f )
-#echo "$shit"
