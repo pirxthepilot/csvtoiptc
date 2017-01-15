@@ -17,6 +17,7 @@ iptcfromcsv = {
     'Country':     'Country',
     'Description': 'Short Description',
     'Keywords':    'Keywords',
+    'Subject':     'Keywords',
 }
 
 
