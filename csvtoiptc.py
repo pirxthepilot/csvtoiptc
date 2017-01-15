@@ -10,6 +10,7 @@ import re
 import logging
 import subprocess
 import os
+import time
 
 # CSV-IPTC mappings
 #
@@ -61,7 +62,7 @@ log('***** STARTING RUN *****')
 log('')
 
 # Declarations
-filelist = []
+filelist = {}
 filenotfound = False
 
 # Preprocess files
@@ -82,7 +83,7 @@ with open(inputcsv, 'rb') as csvfile:
             log("  %s not found!" % filename, 'error')
             filenotfound = True
             continue
-        filelist.append(filename)
+        filelist[filename] = row
 
 # Exit if there are missing files
 if filenotfound:
@@ -97,7 +98,7 @@ else:
 
 # Run loop
 count = 0
-for filename in filelist:
+for filename, row in filelist.iteritems():
 
     # Call exiftool
     exiftool_cmd = ['/usr/bin/exiftool', '-overwrite_original', '-sep', '; ']
@@ -117,6 +118,9 @@ for filename in filelist:
 
     # Filename
     exiftool_cmd.append(filename)
+
+    #print exiftool_cmd
+    #time.sleep(2)
 
     # Run!
     count += 1
