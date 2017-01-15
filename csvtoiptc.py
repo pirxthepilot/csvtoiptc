@@ -24,10 +24,18 @@ iptcfromcsv = {
 # Functions
 #
 
+def log(message, type='info'):
+    if type == 'info':
+        logging.info(message)
+    elif type == 'error':
+        logging.error(message)
+    print "%s" % message
+
 def find(name, path):
     for root, dirs, files in os.walk(path):
-        if name in files:
-            return os.path.join(root, name)
+        for fn in files:
+            if name.lower() == fn.lower():
+                return os.path.join(root, fn)
 
 
 # Init
@@ -40,7 +48,7 @@ logging.info('\n\n\n')
 
 
 if len(sys.argv) != 2:
-    print "Syntax: convert.py <csv file path>"
+    print "Syntax: csvtoiptc.py <csv file path>"
     sys.exit()
 
 inputcsv = str(sys.argv[1])
@@ -49,67 +57,82 @@ inputcsv = str(sys.argv[1])
 # Main prog
 #
 
-logging.info('************************')
-logging.info('***** STARTING RUN *****')
-logging.info('************************')
-logging.info('')
-print '\n***** STARTING RUN *****\n'
+log('***** STARTING RUN *****')
+log('')
 
+# Declarations
+filelist = []
+filenotfound = False
+
+# Preprocess files
+log('Checking files...')
 with open(inputcsv, 'rb') as csvfile:
     csvdict = csv.DictReader(csvfile)
-
-    count = 0
-
     for row in csvdict:
-
-        # Find file and get full relative path
-        filename = find("%s.%s" % (row['Original filename'], row['File Type'].lower()), '.')
-
-        if not os.path.isfile(filename):
-            print "%s not found!" % filename
+        # Do not process blank lines
+        if not row['Original filename']:
             continue
+        # Find file and get full relative path
+        filename = find("%s.%s" % (row['Original filename'], row['File Type']), '.')
+        if not filename:
+            log("  '%s' not found!" % row['Original filename'], 'error')
+            filenotfound = True
+            continue
+        if not os.path.isfile(filename):
+            log("  %s not found!" % filename, 'error')
+            filenotfound = True
+            continue
+        filelist.append(filename)
 
-        # Call exiftool
-        exiftool_cmd = ['/usr/bin/exiftool', '-overwrite_original', '-sep', '; ']
+# Exit if there are missing files
+if filenotfound:
+    log('One or more files in the csv not found! Exiting.', 'error')
+    sys.exit()
+else:
+    log('No missing files - great! Processing %s files.' % len(filelist))
+    log('')
 
-        # Set tag args
-        for iptcparam, csvparam in iptcfromcsv.iteritems():
-            if row[csvparam] == "":
-                continue
-            # If tag is a list, do something special
-            # if ";" in value:
-            #     taglist = value.split("; ")
-            #     for tagval in taglist:
-            #         exiftool_cmd.append('-' + tag + '=' + tagval)
-            # else:
-            exiftool_cmd.append('-' + iptcparam + '=' + row[csvparam])
+#print filelist
+#sys.exit()
+
+# Run loop
+count = 0
+for filename in filelist:
+
+    # Call exiftool
+    exiftool_cmd = ['/usr/bin/exiftool', '-overwrite_original', '-sep', '; ']
+
+    # Set tag args
+    for iptcparam, csvparam in iptcfromcsv.iteritems():
+        if row[csvparam] == "":
+            continue
+        # If tag is a list, do something special
+        # if ";" in value:
+        #     taglist = value.split("; ")
+        #     for tagval in taglist:
+        #         exiftool_cmd.append('-' + tag + '=' + tagval)
+        # else:
+        exiftool_cmd.append('-' + iptcparam + '=' + row[csvparam])
 
 
-        # Filename
-        exiftool_cmd.append(filename)
-        #print exiftool_cmd
+    # Filename
+    exiftool_cmd.append(filename)
 
-        # Run!
-        logging.info('===================\n')
-        logging.info('PROCESSING ' + filename)
-        print '================'
-        count += 1
-        print '[%s]' % count
-        print 'PROCESSING ' + filename
-        #print exiftool_cmd
+    # Run!
+    count += 1
+    log('===================')
+    log('[%s]' % count)
+    log('PROCESSING ' + filename)
 
-        p = subprocess.Popen(exiftool_cmd, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
+    p = subprocess.Popen(exiftool_cmd, stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE)
+    stdout, stderr = p.communicate()
 
-        if stdout:
-            logging.info(stdout)
-            print stdout
-        if stderr:
-            logging.error(stderr)
-            print stderr
+    if stdout:
+        log(stdout)
+    if stderr:
+        log(stderr, 'error')
 
 # Done!
-logging.info('')
-logging.info('+++++ RUN COMPLETE +++++')
-print '\n++++ RUN COMPLETE +++++\n'
+log('')
+log('+++++ RUN COMPLETE (%s files processed) +++++' % len(filelist))
